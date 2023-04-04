@@ -1,8 +1,6 @@
-import pandas as px
 from fpdf import FPDF
-import smtplib as st
-from os import getenv
-from email.message import EmailMessage
+import pandas as px
+from sndemail import Email
 
 df = px.read_csv("articles.csv", dtype={"id": str})
 
@@ -28,7 +26,7 @@ class Article:
 
 
 class Receipt:
-    def __init__(self,article):
+    def __init__(self, article):
         self.article = article
 
     def invoice(self):
@@ -49,43 +47,15 @@ class Receipt:
         pdf.output("invoice.pdf")
 
 
-class Email:
-    def send(self):
-        """Sends an email with the invoice attached"""
-        email = "test"
-        host = "smtp.gmail.com"
-        port = 587
-
-        username = email
-        password = getenv("PASSWORD")
-        receiver = email
-
-        # Message setup
-        email_message = EmailMessage()
-        email_message["Subject"] = "Invoice of Order #1"
-        with open("invoice.pdf", "rb") as file:
-            email_message.add_attachment(file.read(), maintype='application', subtype='pdf', filename='invoice.pdf')
-
-        # Host setup
-        gmail = st.SMTP(host, port)
-        gmail.ehlo()
-        gmail.starttls()
-        gmail.login(username, password)
-
-        # Sends the email
-        gmail.sendmail(username, receiver, email_message.as_string())
-        gmail.quit()
-
-
 print(df)
 
 article_id = input("Enter the id of the article: ")
 article_object = Article(article_id)
-email = Email()
+mail = Email()
 
 if article_object.available():
     receipt = Receipt(article_object)
     article_object.stock()
-    email.send()
+    mail.send()
 else:
     print("Article doesn't exist!")
